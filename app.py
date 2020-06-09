@@ -108,19 +108,6 @@ def temp_all(start=None ,end=None):
     # creating json object of all temps in list
     return jsonify(all_temps)
 
-# @app.route('/api/v1.0/temp/start/end')
-# def temp_end():
-#     start_date = "2016-08-23"
-#     end_date = "2017-08-23"
-
-#     min_avg_max = [func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)]
-
-#     start_end_results = session.query(*min_avg_max).filter(Measurement.date.between(start_date, end_date))
-
-#     start_end_temps = ist(np.ravel(start_end_results))
-
-#     return jsonify(start_end_temps)
-
 
 if __name__ == '__main__':
     app.run()
