@@ -24,33 +24,103 @@ session = Session(engine)
 
 app = Flask(__name__)
 
-@app.route("/")
+@app.route('/')
 def welcome():
     return (
         f'Welcome to the Hawaii climate analysis site!<br/>'
         f'Below are the available API routes:<br/>'
-        f'api/v1.0/precipitation<br/>'
-        f'api/v1.0/stations<br/>'
-        f'api/v1.0/tobs<br/>'
-        f'api/v1.0/temp<br/>'
-        f'api/v1.0/<start>'
-        f'api/v1.0/<end>'
+        f'/api/v1.0/precipitation<br/>'
+        f'/api/v1.0/stations<br/>'
+        f'/api/v1.0/tobs<br/>'
+        f'/api/v1.0/temp_calc/<start>'
+        f'/api/v1.0/temp_calc/<start>/<end>'
     )
 
-@app.route("/api/v1.0/precipitaton")
+@app.route('/api/v1.0/precipitation')
 def precipitation():
-    results = session.query(Measurement.date, Measurement.prcp)\
+    # querying precipation data from final day in dataset to one year prior to final day
+    prcp_results = session.query(Measurement.date, Measurement.prcp)\
     .filter(Measurement.date <="2017-08-23")\
     .filter(Measurement.date >="2016-08-23").all()
 
-    temps = list(np.ravel(results))
+    # list comprehension to create dict of query results
+    precip = {date: prcp for date, prcp in prcp_results}
+  
+    # jsonifying precipitation dict
+    return jsonify(precip)
+    
 
-    return(jsonify(temps)
-    )
 
-# @app.route("/api/v1.0/stations")
+@app.route('/api/v1.0/stations')
+def stations():
+    station_results = session.query(Station.station, Station.name).all()
+    
+    # unraveling results to array and converting to list   
+    stations = list(np.ravel(station_results))
+    
+    # converting station list to json object
+    return jsonify(stations)
 
-# @app.route("/api/v1.0/tobs")
+
+
+@app.route('/api/v1.0/tobs')
+def tobs():
+    # gathering tobs between final day in dataset and one year prior to final day
+    tobs_results = session.query(Measurement.date, Measurement.tobs)\
+    .filter(Measurement.date <="2017-08-23")\
+    .filter(Measurement.date >="2016-08-23").all()
+
+    # unraveling results to array and converting to list
+    tobs = list(np.ravel(tobs_results))
+
+    # jsonifying tobs list
+    return jsonify(tobs)
+
+@app.route('/api/v1.0/temp_calc/<start>')
+def temp_start(start=None):
+    start_date = "2015-08-23"
+    # gathering min, avg, max temps 
+    min_avg_max = [func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)]
+
+    # temp calc results for all dates after start date
+    start_results = session.query(*min_avg_max).filter(Measurement.date >= start_date).all()
+        
+    # unraveling results to array and converting to list
+    start_temps = list(np.ravel(start_results))
+
+    # converting to json object
+    return jsonify(start_temps)
+
+@app.route('/api/v1.0/temp_calc/<start>/<end>')
+def temp_all(start=None ,end=None):
+    start_date = "2015-08-23"
+    end_date = "2016-08-23"
+
+    # gathering min, avg, max temps
+    min_avg_max = [func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)]
+
+    # min/max/avg temps between start and end date
+    all_results = session.query(*min_avg_max).filter(Measurement.date.between(start_date, end_date)).all()
+        
+    # unraveling results to array and converting to list
+    all_temps = list(np.ravel(all_results))
+
+    # creating json object of all temps in list
+    return jsonify(all_temps)
+
+# @app.route('/api/v1.0/temp/start/end')
+# def temp_end():
+#     start_date = "2016-08-23"
+#     end_date = "2017-08-23"
+
+#     min_avg_max = [func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)]
+
+#     start_end_results = session.query(*min_avg_max).filter(Measurement.date.between(start_date, end_date))
+
+#     start_end_temps = ist(np.ravel(start_end_results))
+
+#     return jsonify(start_end_temps)
+
 
 if __name__ == '__main__':
     app.run()
