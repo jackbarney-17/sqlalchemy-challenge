@@ -32,7 +32,7 @@ def welcome():
         f'/api/v1.0/precipitation<br/>'
         f'/api/v1.0/stations<br/>'
         f'/api/v1.0/tobs<br/>'
-        f'/api/v1.0/temp_calc/<start>'
+        f'/api/v1.0/temp_calc/<start><br/'
         f'/api/v1.0/temp_calc/<start>/<end>'
     )
 
@@ -66,6 +66,9 @@ def stations():
 @app.route('/api/v1.0/tobs')
 def tobs():
     # gathering tobs between final day in dataset and one year prior to final day
+    # tobs_results = session.query(Measurement.date, Measurement.tobs)\
+    # .filter(Measurement.date.between("2017-08-23","2016-08-23")).all()
+
     tobs_results = session.query(Measurement.date, Measurement.tobs)\
     .filter(Measurement.date <="2017-08-23")\
     .filter(Measurement.date >="2016-08-23").all()
@@ -92,7 +95,7 @@ def temp_start(start=None):
     return jsonify(start_temps)
 
 @app.route('/api/v1.0/temp_calc/<start>/<end>')
-def temp_all(start=None ,end=None):
+def temp_all(start=None, end=None):
     start_date = "2015-08-23"
     end_date = "2016-08-23"
 
