@@ -66,8 +66,6 @@ def stations():
 @app.route('/api/v1.0/tobs')
 def tobs():
     # gathering tobs between final day in dataset and one year prior to final day
-    # tobs_results = session.query(Measurement.date, Measurement.tobs)\
-    # .filter(Measurement.date.between("2017-08-23","2016-08-23")).all()
 
     tobs_results = session.query(Measurement.date, Measurement.tobs)\
     .filter(Measurement.date <="2017-08-23")\
